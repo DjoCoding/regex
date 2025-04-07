@@ -68,6 +68,7 @@ AST ast_new(Node *root) {
 }
 
 void node_dump(Node *this);
+void node_free(Node *node);
 
 void pri_dump(Primary pri) {
     switch(pri.kind) {
@@ -110,15 +111,31 @@ void rep_dump(Repitition rep) {
     quantifier_dump(rep.quantifier);
 }
 
+void rep_free(Repitition rep) {
+    if(rep.primary.kind == PRIMARY_KIND_GROUP) {
+        return node_free(rep.primary.as.group);
+    }
+}
+
 void concat_dump(Concatenation concat) {
     node_dump(concat.lhs);
     node_dump(concat.rhs);
+}
+
+void concat_free(Concatenation concat) {
+    node_free(concat.lhs);
+    node_free(concat.rhs);
 }
 
 void alter_dump(Alternation alter) {
     node_dump(alter.lhs);
     fprintf(stdout, "|");
     node_dump(alter.rhs);
+}
+
+void alter_free(Alternation alter) {
+    node_free(alter.lhs);
+    node_free(alter.rhs);
 }
 
 void node_dump(Node *this) {
@@ -134,8 +151,29 @@ void node_dump(Node *this) {
     }
 }
 
+void node_free(Node *node) {
+    switch(node->kind) {
+        case NODE_KIND_ALTERNATION:
+            alter_free(node->as.alter);
+            break;
+        case NODE_KIND_CONCATENATION:
+            concat_free(node->as.concat);
+            break;
+        case NODE_KIND_REPITITION:
+            rep_free(node->as.rep);
+            break;
+        default:
+            panic("unregistered node kind.");
+    }
+
+    return free(node);
+}
 
 void ast_dump(AST this) {
     node_dump(this.root);
     fprintf(stdout, "\n");
+}
+
+void ast_free(AST this) {
+    node_free(this.root);
 }

@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <assert.h>
 
 SV sv(char *content, size_t size) {
@@ -21,3 +22,8 @@ SV sv_from_str(const char *content, size_t size) {
     memcpy(c, content, size);
     return sv(c, size);
 } 
+
+bool sv_cmp(SV a, SV b) {
+    if(a.size != b.size) return false;
+    return memcmp(a.content, b.content, a.size) == 0;
+}

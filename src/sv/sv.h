@@ -2,6 +2,7 @@
 #define SV_H
 
 #include <stdio.h>
+#include <stdbool.h>
 
 typedef struct {
     char *content;
@@ -21,5 +22,7 @@ SV sv_from_cstr(char *content);
 
 // string view from a non-pre-allocated string
 SV sv_from_str(const char *content, size_t size);
+
+bool sv_cmp(SV a, SV b);
 
 #endif

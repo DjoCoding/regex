@@ -52,6 +52,7 @@ typedef struct {
 } NFAGraphGenerator;
 
 NFA *nfa_new(State *start, State *accept);
+void nfa_free(NFA *nfa);
 
 NFAGraphGenerator *nfa_graph_gen_new(NFA *nfa, const char *filename);
 void nfa_graph_gen(NFAGraphGenerator *generator);

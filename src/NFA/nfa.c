@@ -21,6 +21,33 @@ NFA *nfa_new(State *start, State *accept) {
     return nfa;
 }
 
+void nfa_free(NFA *nfa);
+void state_free(State **state);
+
+
+void transition_free(Transition t) {
+    state_free(&t.state);
+    if(t.kind == TRANSITION_KIND_NFA) nfa_free(t.maker.nfa);
+}
+
+
+void state_free(State **state) {
+    if(!(*state)) return;
+
+    for(size_t i = 0; i < (*state)->transitions.count; ++i) {
+        transition_free((*state)->transitions.items[i]);
+    }
+
+    free((*state)->transitions.items);
+    free((*state));
+
+    *state = NULL;
+}
+
+void nfa_free(NFA *nfa) {
+    free(nfa);
+}
+
 Transition transition_new_char(char c, State *state) {
     Transition t = {0};
     t.kind = TRANSITION_KIND_CHAR;

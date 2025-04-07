@@ -83,5 +83,6 @@ Node *node_new_alter(Node *lhs, Node *rhs);
 
 AST ast_new(Node *root);
 void ast_dump(AST this);
+void ast_free(AST this);
 
 #endif

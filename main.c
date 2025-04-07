@@ -1,35 +1,31 @@
 #include <stdio.h>
 
-#include <src/lexer/lexer.h>
-#include <src/parser/parser.h>
-#include <src/compiler/compiler.h>
+#include <src/shared/shared.h>
+#include <src/regex/regex.h>
 
 int main(void) {
-    const char *source = "ac";
+    char *regex = "(a|b|(cd+))*";
+    char *strings[] = {
+        "cd",
+        "a",
+        "b",
+        "ab",
+        "abcdcd"
+    };
+
+    NFA *nfa = nfa_from_regex(regex);
     
-    Lexer lexer = lexer_new(source);
-    
-    TokenList tokens = lexer_lex(&lexer);
-    for(size_t i = 0; i < tokens.count; ++i) {
-        Token tok = tokens.items[i];
-        token_dump(tok);
-    }
-
-    Parser parser = parser_new(tokens);
-    AST ast = parser_parse(&parser);
-
-    {
-        fprintf(stdout, "regex: ");
-        ast_dump(ast);
-    }
-
-    Compiler compiler = compiler_new(ast);
-    NFA *nfa = compiler_compile(&compiler);
-
-    NFAGraphGenerator *generator = nfa_graph_gen_new(nfa, "nfa.dot");
+    NFAGraphGenerator *generator = nfa_graph_gen_new(nfa, "./nfa.dot");
     nfa_graph_gen(generator);
 
 
-    free(tokens.items);
+    fprintf(stdout, "regex: %s\n", regex);
+
+    for(size_t i = 0; i < LEN(strings); ++i) {
+        fprintf(stdout, "%s -> %s\n", strings[i], regex_test_from_nfa(nfa, strings[i]) ? "yes" : "no");
+    }
+
+
+    nfa_free(nfa);
     return 0;
 }
