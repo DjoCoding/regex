@@ -1,0 +1,35 @@
+regex        ::= alternation ;
+
+alternation  ::= concatenation { '|' concatenation } ;
+
+concatenation ::= repetition { repetition } ;
+
+repetition   ::= primary [ quantifier ] ;
+
+quantifier   ::= '*' | '+' | '?' | '{' number [ ',' [ number ] ] '}' ;
+
+primary      ::= literal
+               | character_class
+               | '(' regex ')'
+               | '(' '?' ':' regex ')'         (* non-capturing group *)
+               | assertion ;
+
+character_class ::= '[' '^'? class_items ']' ;
+
+class_items  ::= class_item { class_item } ;
+
+class_item   ::= character | character '-' character ;
+
+assertion    ::= '^' | '$' | '\\b' | '\\B' 
+               | '(?=' regex ')'     (* lookahead *)
+               | '(?!' regex ')'     (* negative lookahead *)
+               | '(?<=' regex ')'    (* lookbehind *)
+               | '(?<!' regex ')' ;  (* negative lookbehind *)
+
+literal      ::= any character except metacharacters or escaped ;
+
+character    ::= any single character ;
+
+number       ::= digit { digit } ;
+
+digit        ::= '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' ;

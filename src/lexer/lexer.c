@@ -71,6 +71,7 @@ TokenList lexer_lex(Lexer *this) {
         Token token = lexer_lex_token(this);
         DA_APPPEND(&tokens, token);
     }
+    DA_APPPEND(&tokens, TOKEN_END);
     return tokens;
 }
 

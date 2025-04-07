@@ -24,6 +24,8 @@ typedef struct {
 
 DA(Token, TokenList);
 
+#define TOKEN_END ((Token) { .kind = TOKEN_KIND_END, .value = SV_NULL })
+
 Token token_new(TokenKind kind, SV value);
 void token_dump(Token this);
 
