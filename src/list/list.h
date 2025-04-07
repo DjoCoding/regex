@@ -1,22 +1,23 @@
-#ifndef DA_H
-#define DA_H
+#ifndef LIST_H
+#define LIST_H
 
 #include <stdlib.h>
 #include <assert.h>
 
+#define TYPE()
+
 // T-type of the array element
-// N-name of the new type
-#define DA(T, N) \
+#define LIST(T) \
     typedef struct {\
         T  *items; \
         size_t count; \
         size_t size; \
-    } N
+    }
 
 // N-name of the array type
-#define DA_NEW(N) (N) {0}
+#define LIST_NEW(N) (N) {0}
 
-#define DA_RESIZE(a) \
+#define LIST_RESIZE(a) \
     do { \
         if((a)->size == 0) { \
             (a)->size = 10; \
@@ -26,9 +27,9 @@
         assert((a)->items != NULL && "realloc failed"); \
     } while(0)
 
-#define DA_APPPEND(a, v) \
+#define LIST_APPEND(a, v) \
     do {\
-        if((a)->count >= (a)->size) { DA_RESIZE(a); } \
+        if((a)->count >= (a)->size) { LIST_RESIZE(a); } \
         (a)->items[(a)->count++] = v; \
     } while(0)
 

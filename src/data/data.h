@@ -5,8 +5,9 @@
 #include <src/node/node.h>
 
 // Tokens
-#define QUANTIFIER_COUNT 4
-#define SYMBOL_COUNT 3
+#define QUANTIFIER_COUNT 3
+#define SYMBOL_COUNT 4
+#define PRINTABLE_CHAR_COUNT 69
 
 extern const char *TokenKindToString[TOKEN_KIND_COUNT];
 
@@ -30,5 +31,14 @@ typedef struct {
 } TokenKindToQuantifier;
 
 extern const TokenKindToQuantifier TokenKindToQuantifierMap[QUANTIFIER_COUNT];
+
+
+// Chars
+typedef struct {
+    char c;
+    char *s;
+} CharToStringFormat;
+
+extern const CharToStringFormat PrintableCharToStringFormatMap[PRINTABLE_CHAR_COUNT];
 
 #endif

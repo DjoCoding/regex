@@ -6,4 +6,7 @@
 
 #define panic(...) { fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); exit(EXIT_FAILURE); }
 
-#endif 
+#define UNREACHABLE() panic("%s:%u:unreachable", __FILE__, __LINE__)
+#define TODO(...) panic("%s:%u:todo->%s", __FILE__, __LINE__, __VA_ARGS__)
+
+#endif

@@ -11,6 +11,12 @@ Node *node_new() {
     return node;
 }
 
+Primary primary_new_any_lit() {
+    return (Primary) {
+        .kind = PRIMARY_KIND_ANY_LITREAL
+    };
+}
+
 Primary primary_new_lit(char c) {
     return (Primary) {
         .kind = PRIMARY_KIND_LITERAL,
@@ -72,7 +78,10 @@ void pri_dump(Primary pri) {
             fprintf(stdout, "(");
             node_dump(pri.as.group);
             fprintf(stdout, ")");
-            break;
+            return;
+        case PRIMARY_KIND_ANY_LITREAL:
+            fprintf(stdout, ".");
+            return;
         default:
             panic("unregistered primary kind.");
     }
@@ -81,9 +90,6 @@ void pri_dump(Primary pri) {
 void quantifier_dump(Quantifier q) {
     switch(q) {
         case QUANTIFIER_NONE:
-            return;
-        case QUANTIFIER_ONE:
-            fprintf(stdout, ".");
             return;
         case QUANTIFIER_ZERO_OR_MORE:
             fprintf(stdout, "*");

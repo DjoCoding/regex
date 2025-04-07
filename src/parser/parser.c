@@ -57,6 +57,11 @@ Primary parser_parse_pri(Parser *this) {
         return primary_new_lit(c);
     }
 
+    if(parser_peek(this).kind == TOKEN_KIND_ANY_UNIT) {
+        parser_consume(this);
+        return primary_new_any_lit();
+    }
+
     panic("expected a literal or a group but %s found.", parser_end(this) ? "end" : TokenKindToString[parser_peek(this).kind]);
 }
 

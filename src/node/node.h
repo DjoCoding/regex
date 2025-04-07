@@ -14,7 +14,6 @@ typedef enum {
 
 typedef enum {
     QUANTIFIER_NONE = 0,
-    QUANTIFIER_ONE,
     QUANTIFIER_ONE_OR_MORE,
     QUANTIFIER_ZERO_OR_MORE,
     QUANTIFIER_ZERO_OR_ONE,
@@ -26,6 +25,7 @@ typedef struct {
 
 typedef enum {
     PRIMARY_KIND_LITERAL = 0,
+    PRIMARY_KIND_ANY_LITREAL,
     PRIMARY_KIND_CHARACTER_CLASS,
     PRIMARY_KIND_GROUP,
 } PrimaryKind;
@@ -73,6 +73,7 @@ typedef struct {
 } AST;
 
 
+Primary primary_new_any_lit();
 Primary primary_new_lit(char c);
 Primary primary_new_group(Node *group);
 

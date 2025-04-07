@@ -66,12 +66,12 @@ Token lexer_lex_token(Lexer *this) {
 }
 
 TokenList lexer_lex(Lexer *this) {
-    TokenList tokens = DA_NEW(TokenList);
+    TokenList tokens = LIST_NEW(TokenList);
     while(!lexer_end(this)) {
         Token token = lexer_lex_token(this);
-        DA_APPPEND(&tokens, token);
+        LIST_APPEND(&tokens, token);
     }
-    DA_APPPEND(&tokens, TOKEN_END);
+    LIST_APPEND(&tokens, TOKEN_END);
     return tokens;
 }
 
