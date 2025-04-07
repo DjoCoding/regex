@@ -10,6 +10,7 @@ This project is expected to reach a state where it can operate on regular expres
 
 # Now
 regex is able to lex, parse, compile regular expressions into <a href="https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton">NFAs</a> and use <a href="https://graphviz.org/">graphviz</a> for automaton visualization.
+it can also check if a string matches a regex or not.
 
 # Examples
 ```regex: "a+b"```
