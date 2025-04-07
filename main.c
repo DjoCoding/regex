@@ -5,7 +5,7 @@
 #include <src/compiler/compiler.h>
 
 int main(void) {
-    const char *source = "(a.(b|c))?";
+    const char *source = "ac";
     
     Lexer lexer = lexer_new(source);
     
