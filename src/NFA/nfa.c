@@ -4,7 +4,8 @@
 #include <src/shared/shared.h>
 #include <src/data/data.h>
 
-#define NFA_GRAPH_GENERATE_STATEMENT(g, ...) { fprintf(g->file, __VA_ARGS__); fprintf(g->file, "\n"); }
+#define NFA_GRAPH_GENERATE_INDENT(g) { fprintf(g->file, "\t"); }
+#define NFA_GRAPH_GENERATE_STATEMENT(g, ...) { for(size_t i = 0; i < g->indent; ++i) NFA_GRAPH_GENERATE_INDENT(g); fprintf(g->file, __VA_ARGS__); fprintf(g->file, "\n"); }
 
 size_t _id = 0;
 
@@ -43,7 +44,6 @@ Transition transition_new_epsilon(State *state) {
     return t;
 }
 
-
 State *state_new() {
     State *state = calloc(1, sizeof(State));
     assert(state != NULL && "malloc failed.");
@@ -80,8 +80,17 @@ NFAGraphGenerator *nfa_graph_gen_new(NFA *nfa, const char *filename) {
     generator->nfa = nfa;
     generator->filename = filename;
     generator->file = file;
+    generator->indent = 0;
 
     return generator;
+}
+
+void nfa_graph_start_block(NFAGraphGenerator *g) {
+    g->indent += 1;
+}
+
+void nfa_graph_end_block(NFAGraphGenerator *g) {
+    g->indent -= 1;
 }
 
 void nfa_graph_gen_state(NFAGraphGenerator *g, State *state);
@@ -147,11 +156,17 @@ void nfa_graph_gen_state(NFAGraphGenerator *g, State *state) {
 
 void nfa_graph_gen(NFAGraphGenerator *g) {
     NFA_GRAPH_GENERATE_STATEMENT(g, "digraph NFA {");
-    NFA_GRAPH_GENERATE_STATEMENT(g, "rankdir=LR;");
-    NFA_GRAPH_GENERATE_STATEMENT(g, "node [shape=circle];");
 
-
-    nfa_graph_gen_state(g, g->nfa->start);
+    nfa_graph_start_block(g);
+    
+    {
+        NFA_GRAPH_GENERATE_STATEMENT(g, "rankdir=LR;");
+        NFA_GRAPH_GENERATE_STATEMENT(g, "node [shape=circle];");
+        
+        nfa_graph_gen_state(g, g->nfa->start);
+    }
+    
+    nfa_graph_end_block(g);
 
     NFA_GRAPH_GENERATE_STATEMENT(g, "}");
 

@@ -48,6 +48,7 @@ typedef struct {
     NFA *nfa;
     const char *filename;
     FILE *file;
+    size_t indent;
 } NFAGraphGenerator;
 
 NFA *nfa_new(State *start, State *accept);
