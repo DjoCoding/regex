@@ -17,6 +17,22 @@ typedef enum {
     QUANTIFIER_ONE_OR_MORE,
     QUANTIFIER_ZERO_OR_MORE,
     QUANTIFIER_ZERO_OR_ONE,
+    QUANTIFIER_BETWEEN,
+} QuantifierKind;
+
+typedef struct {
+    bool exists;
+    size_t value;
+} QuantifierBound;
+
+typedef struct {
+    QuantifierBound left;
+    QuantifierBound right;
+} QuantifierBetween;
+
+typedef struct {
+    QuantifierKind kind;
+    QuantifierBetween as_between;
 } Quantifier;
 
 typedef struct {

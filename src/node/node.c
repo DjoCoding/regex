@@ -89,7 +89,7 @@ void pri_dump(Primary pri) {
 }
 
 void quantifier_dump(Quantifier q) {
-    switch(q) {
+    switch(q.kind) {
         case QUANTIFIER_NONE:
             return;
         case QUANTIFIER_ZERO_OR_MORE:
@@ -101,6 +101,13 @@ void quantifier_dump(Quantifier q) {
         case QUANTIFIER_ONE_OR_MORE:
             fprintf(stdout, "+");
             return;
+        case QUANTIFIER_BETWEEN:
+            fprintf(stdout, "{");
+            if(q.as_between.left.exists) fprintf(stdout, "%zu", q.as_between.left.value);
+            fprintf(stdout, ",");
+            if(q.as_between.right.exists) fprintf(stdout, "%zu", q.as_between.right.value);
+            fprintf(stdout, "}");
+            break;
         default:
             panic("unregistered quantifier.");
     }

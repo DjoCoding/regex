@@ -8,6 +8,9 @@ const char *TokenKindToString[TOKEN_KIND_COUNT] = {
     "TokenKindOpenParen",
     "TokenKindCloseParen",
     "TokenKindOperatorOR",
+    "TokenKindOpenCurly",
+    "TokenKindCloseCurly",
+    "TokenKindComma",
     "TokenKindQuantifierOneOrMore",
     "TokenKindQuantifierZeroOrMore",
     "TokenKindQuantifierZeroOrOne",
@@ -23,7 +26,10 @@ const CharToTokenKind CharToSymbolTokenKindMap[SYMBOL_COUNT] = {
     { '(', TOKEN_KIND_OPEN_PAREN },
     { ')', TOKEN_KIND_CLOSE_PAREN },
     { '|', TOKEN_KIND_OPERATOR_OR },
-    { '.', TOKEN_KIND_ANY_UNIT }
+    { '.', TOKEN_KIND_ANY_UNIT },
+    { '{', TOKEN_KIND_OPEN_CURLY },
+    { '}', TOKEN_KIND_CLOSE_CURLY },
+    { ',', TOKEN_KIND_COMMA }
 };
 
 // Nodes
@@ -34,7 +40,7 @@ const char *NodeToString[NODE_KIND_COUNT] = {
 };
 
 // Tokens-Nodes
-const TokenKindToQuantifier TokenKindToQuantifierMap[QUANTIFIER_COUNT] = {
+const TokenKindToQuantifierKind TokenKindToQuantifierKindMap[QUANTIFIER_COUNT] = {
     { TOKEN_KIND_QUANTIFIER_ONE_OR_MORE, QUANTIFIER_ONE_OR_MORE},
     { TOKEN_KIND_QUANTIFIER_ZERO_OR_MORE, QUANTIFIER_ZERO_OR_MORE},
     { TOKEN_KIND_QUANTIFIER_ZERO_OR_ONE, QUANTIFIER_ZERO_OR_ONE},

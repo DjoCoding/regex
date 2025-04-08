@@ -33,15 +33,20 @@ struct Transition {
     State *state;
 };
 
-struct State {
-    Transitions transitions;
+typedef struct {
+    State *copy;
     size_t id;                          // used for graph generation
     bool is_generated;                  // used for graph generation
+} StateMetaData;
+
+struct State {
+    Transitions transitions;
+    StateMetaData data;
 };
 
 struct NFA {
     State *start;
-    State *accept;                    
+    State *accept;
 };
 
 typedef struct {
@@ -52,6 +57,7 @@ typedef struct {
 } NFAGraphGenerator;
 
 NFA *nfa_new(State *start, State *accept);
+NFA *nfa_copy(NFA *nfa);
 void nfa_free(NFA *nfa);
 
 NFAGraphGenerator *nfa_graph_gen_new(NFA *nfa, const char *filename);

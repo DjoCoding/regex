@@ -65,21 +65,98 @@ Primary parser_parse_pri(Parser *this) {
     panic("expected a literal or a group but %s found.", parser_end(this) ? "end" : TokenKindToString[parser_peek(this).kind]);
 }
 
+size_t parser_parse_number(Parser *this) {
+    if(parser_peek(this).kind != TOKEN_KIND_UNIT) {
+        panic("expected a number but %s found.", parser_end(this) ? "end" : TokenKindToString[parser_peek(this).kind]);
+    }
+
+    Token token = parser_peek(this);
+    if(!isnum(token.value.content[0])) {
+        panic("expected a number but %c found.", token.value.content[0]);
+    }
+
+    size_t result = 0;
+    
+    while(!parser_end(this)) {
+        Token token = parser_peek(this);
+        if(token.kind != TOKEN_KIND_UNIT) { break; }
+        char c = token.value.content[0];
+        if(!isnum(c)) { break; }
+        result *= 10;
+        result += (size_t)(c - '0');
+        parser_consume(this);
+    }
+
+    return result;
+}
+
+Quantifier parser_parse_quantifier_between(Parser *this) {
+    if(parser_peek(this).kind != TOKEN_KIND_OPEN_CURLY) {
+        panic("expected { token but %s found.", parser_end(this) ? "end" : TokenKindToString[parser_peek(this).kind]);
+    }
+
+    parser_consume(this);
+
+    Quantifier q = {0};
+    q.kind = QUANTIFIER_BETWEEN;
+
+
+    Token token = parser_peek(this);
+
+    if(token.kind == TOKEN_KIND_UNIT) {
+        q.as_between.left.value = parser_parse_number(this);
+        q.as_between.left.exists = true;
+    }
+
+    if(parser_peek(this).kind != TOKEN_KIND_COMMA) {
+        panic("expected , token but %s found.", parser_end(this) ? "end" : TokenKindToString[parser_peek(this).kind]);
+    }
+
+    parser_consume(this);
+    
+    if(parser_peek(this).kind == TOKEN_KIND_UNIT) {
+        q.as_between.right.value = parser_parse_number(this);
+        q.as_between.right.exists = true;
+    }
+
+    if(parser_peek(this).kind != TOKEN_KIND_CLOSE_CURLY) {
+        panic("expected } token but %s found.", parser_end(this) ? "end" : TokenKindToString[parser_peek(this).kind]);
+    }
+
+    parser_consume(this);
+
+    return q;
+}
+
+Quantifier parser_parse_quantifier(Parser *this) {
+    Token token = parser_peek(this);
+
+    if(token.kind == TOKEN_KIND_OPEN_CURLY) {
+        return parser_parse_quantifier_between(this);
+    }
+
+    for(size_t i = 0; i < LEN(TokenKindToQuantifierKindMap); ++i) {
+        if(token.kind != TokenKindToQuantifierKindMap[i].kind) continue;
+        parser_consume(this);
+        return (Quantifier) {
+            .kind = TokenKindToQuantifierKindMap[i].q
+        };
+    }
+    
+    return (Quantifier) {
+        .kind = QUANTIFIER_NONE
+    };
+}
+
 Node *parser_parse_rep(Parser *this) {
     Primary pri = parser_parse_pri(this);
     
     if(parser_end(this)) {
-        return node_new_rep(pri, QUANTIFIER_NONE);
+        return node_new_rep(pri, (Quantifier) { .kind = QUANTIFIER_NONE });
     }
 
-    Token token = parser_peek(this);
-    for(size_t i = 0; i < LEN(TokenKindToQuantifierMap); ++i) {
-        if(token.kind != TokenKindToQuantifierMap[i].kind) continue;
-        parser_consume(this);
-        return node_new_rep(pri, TokenKindToQuantifierMap[i].q);
-    }
-    
-    return node_new_rep(pri, QUANTIFIER_NONE);
+    Quantifier q = parser_parse_quantifier(this);
+    return node_new_rep(pri, q);
 }
 
 Node *parser_parse_concat(Parser *this) {

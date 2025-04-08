@@ -4,11 +4,12 @@
 #include <src/token/token.h>
 #include <src/node/node.h>
 
-// Tokens
 #define QUANTIFIER_COUNT 3
-#define SYMBOL_COUNT 4
+#define SYMBOL_COUNT 7
 #define PRINTABLE_CHAR_COUNT 69
 
+
+// Tokens
 extern const char *TokenKindToString[TOKEN_KIND_COUNT];
 
 typedef struct {
@@ -27,10 +28,10 @@ extern const char *NodeToString[NODE_KIND_COUNT];
 // Tokens-Nodes
 typedef struct {
     TokenKind kind;
-    Quantifier q;
-} TokenKindToQuantifier;
+    QuantifierKind q;
+} TokenKindToQuantifierKind;
 
-extern const TokenKindToQuantifier TokenKindToQuantifierMap[QUANTIFIER_COUNT];
+extern const TokenKindToQuantifierKind TokenKindToQuantifierKindMap[QUANTIFIER_COUNT];
 
 
 // Chars

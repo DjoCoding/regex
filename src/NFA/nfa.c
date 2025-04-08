@@ -13,6 +13,11 @@ static size_t gen_id() {
     return _id++;
 }
 
+State *state_copy(State *state);
+
+NFA *nfa_copy(NFA *nfa);
+void nfa_free(NFA *nfa);
+
 NFA *nfa_new(State *start, State *accept) {
     NFA *nfa = malloc(sizeof(NFA));
     assert(nfa != NULL && "malloc failed.");
@@ -21,27 +26,36 @@ NFA *nfa_new(State *start, State *accept) {
     return nfa;
 }
 
-void nfa_free(NFA *nfa);
-void state_free(State **state);
+Transition transition_copy(Transition t) {
+    Transition ct = t;
 
-
-void transition_free(Transition t) {
-    state_free(&t.state);
-    if(t.kind == TRANSITION_KIND_NFA) nfa_free(t.maker.nfa);
-}
-
-
-void state_free(State **state) {
-    if(!(*state)) return;
-
-    for(size_t i = 0; i < (*state)->transitions.count; ++i) {
-        transition_free((*state)->transitions.items[i]);
+    if(t.kind == TRANSITION_KIND_NFA) {
+        ct.maker.nfa = nfa_copy(t.maker.nfa);
     }
 
-    free((*state)->transitions.items);
-    free((*state));
+    ct.state = state_copy(t.state);
+    return ct;
+}
 
-    *state = NULL;
+State *state_copy(State *state) {
+    if(state->data.copy != NULL) return state->data.copy;
+
+    State *cstate = state_new();
+
+    for(size_t i = 0; i < state->transitions.count; ++i) {
+        Transition t = state->transitions.items[i];
+        Transition ct = transition_copy(t);
+        LIST_APPEND(&cstate->transitions, ct);
+    }
+
+    state->data.copy = cstate;
+    return cstate;
+}
+
+NFA *nfa_copy(NFA *nfa) {
+    State *state = state_copy(nfa->start);
+    State *accept = NULL;
+    return nfa_new(state, accept);
 }
 
 void nfa_free(NFA *nfa) {
@@ -74,8 +88,9 @@ Transition transition_new_epsilon(State *state) {
 State *state_new() {
     State *state = calloc(1, sizeof(State));
     assert(state != NULL && "malloc failed.");
-    state->id = gen_id();
-    state->is_generated = false;
+    state->data.id = gen_id();
+    state->data.is_generated = false;
+    state->data.copy = NULL;
     return state;
 }
 
@@ -123,7 +138,7 @@ void nfa_graph_end_block(NFAGraphGenerator *g) {
 void nfa_graph_gen_state(NFAGraphGenerator *g, State *state);
 
 void nfa_graph_gen_epsilon_transition(NFAGraphGenerator *g, State *from, State *to) {
-    NFA_GRAPH_GENERATE_STATEMENT(g, "q%zu -> q%zu [label=\"ε\"];", from->id, to->id);
+    NFA_GRAPH_GENERATE_STATEMENT(g, "q%zu -> q%zu [label=\"ε\"];", from->data.id, to->data.id);
     nfa_graph_gen_state(g, to);
 }
 
@@ -137,13 +152,12 @@ void nfa_graph_gen_char_transition(NFAGraphGenerator *g, State *from, char c, St
         }
     }
 
-
-    NFA_GRAPH_GENERATE_STATEMENT(g, "q%zu -> q%zu [label=\"%s\"];", from->id, to->id, label);
+    NFA_GRAPH_GENERATE_STATEMENT(g, "q%zu -> q%zu [label=\"%s\"];", from->data.id, to->data.id, label);
     nfa_graph_gen_state(g, to);
 }
 
 void nfa_graph_gen_nfa_transition(NFAGraphGenerator *g, State *from, NFA *by, State *to) {
-    NFA_GRAPH_GENERATE_STATEMENT(g, "q%zu -> q%zu [label=\"ε\"];", from->id, by->start->id);
+    NFA_GRAPH_GENERATE_STATEMENT(g, "q%zu -> q%zu [label=\"ε\"];", from->data.id, by->start->data.id);
     nfa_graph_gen_state(g, by->start);
 }
 
@@ -163,17 +177,17 @@ void nfa_graph_gen_transition(NFAGraphGenerator *g, State *current, Transition t
 }
 
 void nfa_graph_gen_state(NFAGraphGenerator *g, State *state) {
-    if(state->is_generated) return;
+    if(state->data.is_generated) return;
 
-    state->is_generated = true;
+    state->data.is_generated = true;
 
 
-    if(state == g->nfa->accept) {
+    if(state->transitions.count == 0) {
         // define the accept state 
-        NFA_GRAPH_GENERATE_STATEMENT(g, "q%zu [shape=doublecircle];", g->nfa->accept->id);
+        NFA_GRAPH_GENERATE_STATEMENT(g, "q%zu [shape=doublecircle];", state->data.id);
     } else {
         // define current state as normal state
-        NFA_GRAPH_GENERATE_STATEMENT(g, "q%zu [label=\"q%zu\"];", state->id, state->id);
+        NFA_GRAPH_GENERATE_STATEMENT(g, "q%zu [label=\"q%zu\"];", state->data.id, state->data.id);
     }
     
     for(size_t i = 0; i < state->transitions.count; ++i) {

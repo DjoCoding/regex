@@ -49,23 +49,6 @@ NFA *compiler_compile_quantifier_zero_or_one(NFA *nfa) {
     return nfa_new(start, accept);
 }
 
-NFA *compiler_compile_quantifier(NFA *nfa, Quantifier q) {
-    if(q == QUANTIFIER_NONE) return nfa;
-    
-    switch(q) {
-        case QUANTIFIER_ONE_OR_MORE:
-            return compiler_compile_quantifier_one_or_more(nfa);
-        case QUANTIFIER_ZERO_OR_MORE:
-            return compiler_compile_quantifier_zero_or_more(nfa);
-        case QUANTIFIER_ZERO_OR_ONE:
-            return compiler_compile_quantifier_zero_or_one(nfa);
-        default:
-            panic("unregistered quantifier.");
-    }
-
-    UNREACHABLE();
-}
-
 NFA *compiler_compile_any_lit() {
     State *start = state_new();
     State *accept = state_new();
@@ -97,9 +80,69 @@ NFA *compiler_compile_primary(Primary pri) {
     UNREACHABLE();
 }
 
+NFA *compiler_compile_quantifier_between_rep(Repitition rep) {
+    QuantifierBetween q = rep.quantifier.as_between;
+
+    State *start = state_new();
+    State *accept = state_new();
+    
+    State *last_nfa_accept_state = start;
+    NFA *nfa = NULL;
+
+    size_t left = q.left.exists ? q.left.value : 0;
+    size_t right = q.right.value;
+
+    if((left == 0) && !q.right.exists) {
+        nfa = compiler_compile_primary(rep.primary);
+        state_add_epsilon_transition(start, nfa->start);
+        state_add_epsilon_transition(nfa->accept, nfa->start);
+        state_add_epsilon_transition(nfa->accept, accept);
+        state_add_epsilon_transition(start, accept);
+        return nfa_new(start, accept);
+    }
+
+    if(left != 0) {
+        for(size_t i = 0; i < left; ++i) {
+            nfa = compiler_compile_primary(rep.primary);
+            state_add_nfa_transition(last_nfa_accept_state, nfa);
+            last_nfa_accept_state = nfa->accept;
+        }
+    }
+
+    if(!q.right.exists) {
+        state_add_epsilon_transition(nfa->accept, nfa->start);
+    } else {
+        for(size_t i = left + 1; i <= right; i++) {
+            nfa = compiler_compile_primary(rep.primary);
+            state_add_epsilon_transition(last_nfa_accept_state, nfa->start);
+            state_add_epsilon_transition(last_nfa_accept_state, accept);
+            last_nfa_accept_state = nfa->accept;
+        }
+    }
+
+    state_add_epsilon_transition(nfa->accept, accept);
+    return nfa_new(start, accept);
+}
+
 NFA *compiler_compile_rep(Repitition rep) {
-    NFA *pri = compiler_compile_primary(rep.primary);
-    return compiler_compile_quantifier(pri, rep.quantifier);
+    Quantifier q = rep.quantifier;
+    if(q.kind == QUANTIFIER_BETWEEN) return compiler_compile_quantifier_between_rep(rep);
+
+    NFA *nfa = compiler_compile_primary(rep.primary);
+    if(q.kind == QUANTIFIER_NONE) return nfa;
+    
+    switch(q.kind) {
+        case QUANTIFIER_ONE_OR_MORE:
+            return compiler_compile_quantifier_one_or_more(nfa);
+        case QUANTIFIER_ZERO_OR_MORE:
+            return compiler_compile_quantifier_zero_or_more(nfa);
+        case QUANTIFIER_ZERO_OR_ONE:
+            return compiler_compile_quantifier_zero_or_one(nfa);
+        default:
+            panic("unregistered quantifier.");
+    }
+
+    UNREACHABLE();
 }
 
 NFA *compiler_compile_concat(Concatenation concat) {
