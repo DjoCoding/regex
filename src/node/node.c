@@ -61,9 +61,11 @@ Node *node_new_alter(Node *lhs, Node *rhs) {
 }
 
 
-AST ast_new(Node *root) {
+AST ast_new(Node *root, bool caret, bool dollar) {
     return (AST) {
-        .root = root 
+        .root = root,
+        .caret = caret,
+        .dollar = dollar
     };
 }
 
@@ -177,7 +179,16 @@ void node_free(Node *node) {
 }
 
 void ast_dump(AST this) {
+    if(this.caret) {
+        fprintf(stdout, "^");
+    }
+
     node_dump(this.root);
+
+    if(this.dollar) {
+        fprintf(stdout, "$");
+    }
+
     fprintf(stdout, "\n");
 }
 

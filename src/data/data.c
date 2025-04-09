@@ -11,6 +11,8 @@ const char *TokenKindToString[TOKEN_KIND_COUNT] = {
     "TokenKindOpenCurly",
     "TokenKindCloseCurly",
     "TokenKindComma",
+    "TokenKindCaret",
+    "TokenKindDollar",
     "TokenKindQuantifierOneOrMore",
     "TokenKindQuantifierZeroOrMore",
     "TokenKindQuantifierZeroOrOne",
@@ -29,7 +31,9 @@ const CharToTokenKind CharToSymbolTokenKindMap[SYMBOL_COUNT] = {
     { '.', TOKEN_KIND_ANY_UNIT },
     { '{', TOKEN_KIND_OPEN_CURLY },
     { '}', TOKEN_KIND_CLOSE_CURLY },
-    { ',', TOKEN_KIND_COMMA }
+    { ',', TOKEN_KIND_COMMA },
+    { '^', TOKEN_KIND_CARET },
+    { '$', TOKEN_KIND_DOLLAR }
 };
 
 // Nodes

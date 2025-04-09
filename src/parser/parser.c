@@ -163,6 +163,7 @@ Node *parser_parse_concat(Parser *this) {
     Node *lhs = parser_parse_rep(this);
     while (true) {
         if(parser_end(this)) break;
+        if(parser_peek(this).kind == TOKEN_KIND_DOLLAR) break;
         if(parser_peek(this).kind == TOKEN_KIND_OPERATOR_OR) break;
         if(parser_peek(this).kind == TOKEN_KIND_CLOSE_PAREN) break;
 
@@ -177,6 +178,7 @@ Node *parser_parse_alter(Parser *this) {
     while(true) {
         if(parser_end(this)) break;
         if(parser_peek(this).kind == TOKEN_KIND_CLOSE_PAREN) break;
+        if(parser_peek(this).kind == TOKEN_KIND_DOLLAR) break;
 
         if(parser_peek(this).kind != TOKEN_KIND_OPERATOR_OR) { 
             if(parser_end(this)) { break; }
@@ -196,6 +198,13 @@ Node *parser_parse_node(Parser *this) {
 }
 
 AST parser_parse(Parser *this) {
+    bool caret = parser_peek(this).kind == TOKEN_KIND_CARET;
+    if(caret) parser_consume(this);
+
     Node *root = parser_parse_node(this);
-    return ast_new(root); 
+
+    bool dollar = parser_peek(this).kind == TOKEN_KIND_DOLLAR;
+    if(dollar) parser_consume(this);
+
+    return ast_new(root, caret, dollar); 
 }

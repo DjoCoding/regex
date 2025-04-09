@@ -191,6 +191,48 @@ NFA *compiler_compile_root(Node *root) {
     return compiler_compile_node(root);
 }
 
+NFA *compiler_compile_ast(AST ast) {
+    State *start = state_new();
+    State *accept = state_new();
+
+    NFA *nfa = compiler_compile_root(ast.root);
+
+    if(ast.caret) {
+        state_add_nfa_transition(start, nfa);
+    } else {
+        // get any node
+        NFA *any = compiler_compile_any_lit();
+        
+        // connect start state with any
+        state_add_epsilon_transition(start, any->start);
+
+        state_add_epsilon_transition(start, nfa->start);
+ 
+        // make a loop back    
+        state_add_epsilon_transition(any->accept, any->start);
+        
+        // connect any node with nfa
+        state_add_nfa_transition(any->accept, nfa);
+    }
+
+    if(ast.dollar) {
+        state_add_epsilon_transition(nfa->accept, accept);
+    } else {
+        // get any node
+        NFA *any = compiler_compile_any_lit();
+        
+        // make a loop back    
+        state_add_epsilon_transition(any->accept, any->start);
+        
+        state_add_epsilon_transition(nfa->accept, any->start);
+        state_add_epsilon_transition(nfa->accept, accept);
+
+        state_add_epsilon_transition(any->accept, accept);
+    }
+
+    return nfa_new(start, accept);
+}
+
 NFA *compiler_compile(Compiler *c) {
-    return compiler_compile_root(c->ast.root);
+    return compiler_compile_ast(c->ast);
 }

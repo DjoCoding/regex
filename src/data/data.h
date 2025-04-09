@@ -5,7 +5,7 @@
 #include <src/node/node.h>
 
 #define QUANTIFIER_COUNT 3
-#define SYMBOL_COUNT 7
+#define SYMBOL_COUNT 9
 #define PRINTABLE_CHAR_COUNT 69
 
 

@@ -85,6 +85,8 @@ struct Node {
 };
 
 typedef struct {
+    bool caret;
+    bool dollar;
     Node *root;
 } AST;
 
@@ -97,7 +99,7 @@ Node *node_new_rep(Primary primary, Quantifier q);
 Node *node_new_concat(Node *lhs, Node *rhs);
 Node *node_new_alter(Node *lhs, Node *rhs);
 
-AST ast_new(Node *root);
+AST ast_new(Node *root, bool caret, bool dollar);
 void ast_dump(AST this);
 void ast_free(AST this);
 
