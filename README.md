@@ -17,10 +17,14 @@ it can also check if a string matches a regex or not.
 
 ![a+b](./assets/nfa.regex:a+b.png)
 
-```regex: "a|b"```
+```regex: "^a+b$"```
 
-![a|b](./assets/nfa.regex:a|b.png)
+![a+b](./assets/nfa.regex:^a+b$.png)
 
-```regex: ".*"```
+```regex: "^a|b$"```
 
-![a|b](./assets/nfa.regex:.*.png)
+![a|b](./assets/nfa.regex:^a|b$.png)
+
+```regex: "a{1,2}b$"```
+
+![a|b](./assets/nfa.regex:a{1,2}b$.png)

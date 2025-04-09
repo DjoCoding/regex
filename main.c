@@ -14,7 +14,7 @@ typedef struct {
 } StringBoolean;
 
 int main(void) {
-    char *regex = "^(a|b+c)$";
+    char *regex = "a{1,2}b$";
     StringBoolean tests[] = {
         { "a",              true  },
         { "bbbbbc",             true  },
