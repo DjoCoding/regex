@@ -1,4 +1,4 @@
 * consider adding a way to minimize the NFA.
-* add support to character classes
-* add support to their negation
+* add support to character classes: done
+* add support to their negation: done
 * add support to `\<letter>` thing
