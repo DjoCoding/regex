@@ -11,6 +11,41 @@ Node *node_new() {
     return node;
 }
 
+Range range_new(char from, char to) {
+    return (Range) {
+        .from = from,
+        .to = to
+    };
+}
+ 
+ClassItem class_item_from_lit(char c) {
+    return (ClassItem) {
+        .kind  = CLASS_ITEM_KIND_LITERAL,
+        .as.lit.c = c
+    };
+}
+
+ClassItem class_item_from_range(Range range) {
+    return (ClassItem) {
+        .kind = CLASS_ITEM_KIND_RANGE,
+        .as.range = range
+    };
+}
+
+CharClass char_class_new(ClassItems class) {
+    return (CharClass) {
+        .class = class
+    };
+}
+
+Primary primary_new_char_class(CharClass char_class) {
+    return (Primary) {
+        .kind = PRIMARY_KIND_CHARACTER_CLASS,
+        .as.char_class = char_class
+    };
+}
+
+
 Primary primary_new_any_lit() {
     return (Primary) {
         .kind = PRIMARY_KIND_ANY_LITREAL
@@ -72,6 +107,21 @@ AST ast_new(Node *root, bool caret, bool dollar) {
 void node_dump(Node *this);
 void node_free(Node *node);
 
+void class_item_dump(ClassItem item) {
+    switch (item.kind) {
+        case CLASS_ITEM_KIND_LITERAL:
+            fprintf(stdout, "%c", item.as.lit.c);
+            return;
+        case CLASS_ITEM_KIND_RANGE:
+            fprintf(stdout, "%c-%c", item.as.range.from, item.as.range.to);
+            return;
+        default: 
+            panic("unregistered class item kind.");
+    }
+
+    UNREACHABLE();
+}
+
 void pri_dump(Primary pri) {
     switch(pri.kind) {
         case PRIMARY_KIND_LITERAL:
@@ -84,6 +134,14 @@ void pri_dump(Primary pri) {
             return;
         case PRIMARY_KIND_ANY_LITREAL:
             fprintf(stdout, ".");
+            return;
+        case PRIMARY_KIND_CHARACTER_CLASS:
+            fprintf(stdout, "[");
+            for(size_t i = 0; i < pri.as.char_class.class.count; ++i) {
+                ClassItem item = pri.as.char_class.class.items[i];
+                class_item_dump(item);
+            }
+            fprintf(stdout, "]");
             return;
         default:
             panic("unregistered primary kind.");
@@ -194,4 +252,10 @@ void ast_dump(AST this) {
 
 void ast_free(AST this) {
     node_free(this.root);
+}
+
+bool quantifier_between_validate(QuantifierBetween q) {
+    if(!q.left.exists) return true;
+    if(!q.right.exists) return true;
+    return q.left.value <= q.right.value;
 }

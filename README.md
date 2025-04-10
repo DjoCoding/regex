@@ -15,16 +15,20 @@ it can also check if a string matches a regex or not.
 # Examples
 ```regex: "a+b"```
 
-![a+b](./assets/nfa.regex:a+b.png)
+![a+b](./images/nfa.regex:a+b.png)
 
 ```regex: "^a+b$"```
 
-![a+b](./assets/nfa.regex:^a+b$.png)
+![a+b](./images/nfa.regex:^a+b$.png)
 
 ```regex: "^a|b$"```
 
-![a|b](./assets/nfa.regex:^a|b$.png)
+![a|b](./images/nfa.regex:^a|b$.png)
 
 ```regex: "a{1,2}b$"```
 
-![a|b](./assets/nfa.regex:a{1,2}b$.png)
+![a|b](./images/nfa.regex:a{1,2}b$.png)
+
+```regex: "^[a-d]$"```
+
+![a|b](./images/nfa.regex:^[a-d]$.png)

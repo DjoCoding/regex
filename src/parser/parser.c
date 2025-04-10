@@ -13,8 +13,13 @@ Parser parser_new(TokenList tokens) {
     };
 }
 
+Token parser_peek_ahead(Parser *this, size_t offset) {
+    if(this->current + offset >= this->tokens.count) return TOKEN_END;
+    return this->tokens.items[this->current + offset];
+}
+
 Token parser_peek(Parser *this) {
-    return this->tokens.items[this->current];
+    return parser_peek_ahead(this, 0);
 }
 
 void parser_consume(Parser *this) {
@@ -23,6 +28,10 @@ void parser_consume(Parser *this) {
 
 bool parser_end(Parser *this) {
     return parser_peek(this).kind == TOKEN_KIND_END;
+}
+
+bool parser_at_last(Parser *this) {
+    return parser_peek_ahead(this, 1).kind == TOKEN_KIND_END;
 }
 
 Node *parser_parse_node(Parser *this);
@@ -45,10 +54,82 @@ Node *parser_parse_group(Parser *this) {
     return node;
 }
 
+char parser_parse_char(Parser *this) {
+    Token tok = parser_peek(this);
+
+    if(tok.kind != TOKEN_KIND_UNIT) {
+        panic("expected a literal but %s found.", parser_end(this) ? "end" : TokenKindToString[tok.kind]);
+    }
+
+    parser_consume(this);
+    return tok.value.content[0];
+}
+
+Range parser_parse_range(Parser *this) {
+    char from = parser_parse_char(this);
+
+    if(parser_peek(this).kind != TOKEN_KIND_HYPHEN) {
+        panic("expected a range but %s found.", parser_end(this) ? "end" : TokenKindToString[parser_peek(this).kind]);
+    }
+    parser_consume(this);
+
+    char to = parser_parse_char(this);
+
+
+    if(from > to) {
+        panic("expected left range bound to be less than the right one.");
+    }
+
+    return range_new(from, to); 
+}
+
+ClassItem parser_parse_class_item(Parser *this) {
+    if(parser_end(this)) {
+        panic("expected a class item but end found.");
+    }
+
+    if(parser_peek_ahead(this, 1).kind == TOKEN_KIND_HYPHEN) {
+        Range range = parser_parse_range(this);
+        return class_item_from_range(range);
+    }
+
+    char c = parser_parse_char(this);
+    return class_item_from_lit(c);
+}
+
+CharClass parser_parse_char_class(Parser *this) {
+    if(parser_peek(this).kind != TOKEN_KIND_OPEN_BRACKET) {
+        panic("expected `[` but %s found.", parser_end(this) ? "end" : TokenKindToString[parser_peek(this).kind]);
+    }
+
+    parser_consume(this);
+
+    ClassItems class = LIST_NEW(ClassItems);
+
+    while(!parser_end(this)) {
+        if(parser_peek(this).kind == TOKEN_KIND_CLOSE_BRACKET) break;
+        ClassItem item = parser_parse_class_item(this);
+        LIST_APPEND(&class, item);
+    }
+
+    if(parser_peek(this).kind != TOKEN_KIND_CLOSE_BRACKET) {
+        panic("expected `]` but %s found.", parser_end(this) ? "end" : TokenKindToString[parser_peek(this).kind]);
+    }
+
+    parser_consume(this);
+
+    return char_class_new(class);
+}
+
 Primary parser_parse_pri(Parser *this) {
     if(parser_peek(this).kind == TOKEN_KIND_OPEN_PAREN) {
         Node *group = parser_parse_group(this);
         return primary_new_group(group);
+    }
+
+    if(parser_peek(this).kind == TOKEN_KIND_OPEN_BRACKET) {
+        CharClass char_class = parser_parse_char_class(this);
+        return primary_new_char_class(char_class);
     }
 
     if(parser_peek(this).kind == TOKEN_KIND_UNIT) {
@@ -90,6 +171,17 @@ size_t parser_parse_number(Parser *this) {
     return result;
 }
 
+QuantifierBound parser_parse_quantifier_bound(Parser *this) {
+    QuantifierBound bound = {0};
+
+    if(parser_peek(this).kind == TOKEN_KIND_UNIT) {
+        bound.value = parser_parse_number(this);
+        bound.exists = true;
+    }
+
+    return bound;
+}
+
 Quantifier parser_parse_quantifier_between(Parser *this) {
     if(parser_peek(this).kind != TOKEN_KIND_OPEN_CURLY) {
         panic("expected { token but %s found.", parser_end(this) ? "end" : TokenKindToString[parser_peek(this).kind]);
@@ -100,30 +192,24 @@ Quantifier parser_parse_quantifier_between(Parser *this) {
     Quantifier q = {0};
     q.kind = QUANTIFIER_BETWEEN;
 
-
-    Token token = parser_peek(this);
-
-    if(token.kind == TOKEN_KIND_UNIT) {
-        q.as_between.left.value = parser_parse_number(this);
-        q.as_between.left.exists = true;
-    }
+    q.as_between.left = parser_parse_quantifier_bound(this);
 
     if(parser_peek(this).kind != TOKEN_KIND_COMMA) {
         panic("expected , token but %s found.", parser_end(this) ? "end" : TokenKindToString[parser_peek(this).kind]);
     }
-
     parser_consume(this);
     
-    if(parser_peek(this).kind == TOKEN_KIND_UNIT) {
-        q.as_between.right.value = parser_parse_number(this);
-        q.as_between.right.exists = true;
-    }
+    q.as_between.right = parser_parse_quantifier_bound(this);
 
     if(parser_peek(this).kind != TOKEN_KIND_CLOSE_CURLY) {
         panic("expected } token but %s found.", parser_end(this) ? "end" : TokenKindToString[parser_peek(this).kind]);
     }
 
     parser_consume(this);
+
+    if(!quantifier_between_validate(q.as_between)) {
+        panic("expected left bound to be less than right bound.");
+    }
 
     return q;
 }

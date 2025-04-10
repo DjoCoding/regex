@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include <src/sv/sv.h> 
+#include <src/list/list.h>
 
 typedef enum {
     NODE_KIND_ALTERNATION = 0,
@@ -11,6 +12,36 @@ typedef enum {
     NODE_KIND_REPITITION,
     NODE_KIND_COUNT
 } NodeKind;
+
+typedef struct {
+    char c;
+} Literal;
+
+typedef struct {
+    char from;
+    char to;
+} Range;
+
+typedef enum {
+    CLASS_ITEM_KIND_LITERAL = 0,
+    CLASS_ITEM_KIND_RANGE,
+} ClassItemKind;
+
+typedef union {
+    Range range;
+    Literal lit;
+} ClassItemAs;
+
+typedef struct {
+    ClassItemKind kind;
+    ClassItemAs as;
+} ClassItem;
+
+TYPE() LIST(ClassItem) ClassItems;
+
+typedef struct {
+    ClassItems class;
+} CharClass;
 
 typedef enum {
     QUANTIFIER_NONE = 0,
@@ -35,10 +66,6 @@ typedef struct {
     QuantifierBetween as_between;
 } Quantifier;
 
-typedef struct {
-    char c;
-} Literal;
-
 typedef enum {
     PRIMARY_KIND_LITERAL = 0,
     PRIMARY_KIND_ANY_LITREAL,
@@ -51,6 +78,7 @@ typedef struct Node Node;
 typedef union {
     Node *group;
     Literal lit;
+    CharClass char_class;
 } PrimaryAs;
 
 typedef struct {
@@ -60,6 +88,7 @@ typedef struct {
 
 typedef struct {
     Primary primary;
+
     Quantifier quantifier;
 } Repitition;
 
@@ -91,6 +120,16 @@ typedef struct {
 } AST;
 
 
+bool quantifier_between_validate(QuantifierBetween q);
+
+Range range_new(char from, char to);
+
+ClassItem class_item_from_lit(char c);
+ClassItem class_item_from_range(Range range);
+
+CharClass char_class_new(ClassItems class);
+
+Primary primary_new_char_class(CharClass char_class);
 Primary primary_new_any_lit();
 Primary primary_new_lit(char c);
 Primary primary_new_group(Node *group);

@@ -63,6 +63,50 @@ NFA *compiler_compile_lit(char c) {
     return nfa_new(start, accept);
 }
 
+NFA *compiler_compile_range(Range range) {
+    State *start  = state_new();
+    State *accept = state_new();
+
+    for(char c = range.from; c <= range.to; ++c) {
+        NFA *nfa = compiler_compile_lit(c);
+        state_add_epsilon_transition(start, nfa->start);
+        state_add_epsilon_transition(nfa->accept, accept);
+    }
+
+    return nfa_new(start, accept);
+}
+
+NFA *compiler_compile_class_item(ClassItem item) {
+    switch(item.kind) {
+        case CLASS_ITEM_KIND_LITERAL:   
+            return compiler_compile_lit(item.as.lit.c);
+        case CLASS_ITEM_KIND_RANGE: 
+            return compiler_compile_range(item.as.range);
+        default:
+            panic("unregistered class item kind.");
+    }
+
+    UNREACHABLE();
+}
+
+NFA *compiler_compile_char_class(CharClass char_class) {
+    State *start  = state_new();
+    State *accept = state_new();
+
+    ClassItems class = char_class.class;
+
+    for(size_t i = 0; i < class.count; ++i) {
+        ClassItem item = class.items[i];
+
+        NFA *nfa = compiler_compile_class_item(item);
+        
+        state_add_epsilon_transition(start, nfa->start);
+        state_add_epsilon_transition(nfa->accept, accept);
+    }
+
+    return nfa_new(start, accept);
+}
+
 NFA *compiler_compile_primary(Primary pri) {
     switch(pri.kind) {
         case PRIMARY_KIND_ANY_LITREAL:
@@ -72,7 +116,7 @@ NFA *compiler_compile_primary(Primary pri) {
         case PRIMARY_KIND_GROUP:
             return compiler_compile_node(pri.as.group);
         case PRIMARY_KIND_CHARACTER_CLASS:
-            TODO("implement character class compiling");
+            return compiler_compile_char_class(pri.as.char_class);
         default:
             panic("unregistered primary kind.");
     }

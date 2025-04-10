@@ -13,27 +13,33 @@ const char *TokenKindToString[TOKEN_KIND_COUNT] = {
     "TokenKindComma",
     "TokenKindCaret",
     "TokenKindDollar",
+    "TokenKindOpenBracket",
+    "TokenKindCloseBracket",
+    "TokenKindHyphen",
     "TokenKindQuantifierOneOrMore",
     "TokenKindQuantifierZeroOrMore",
     "TokenKindQuantifierZeroOrOne",
 };
 
 const CharToTokenKind CharToQuantifierTokenKindMap[QUANTIFIER_COUNT] = {
-    { '+', TOKEN_KIND_QUANTIFIER_ONE_OR_MORE },
-    { '*', TOKEN_KIND_QUANTIFIER_ZERO_OR_MORE },
-    { '?', TOKEN_KIND_QUANTIFIER_ZERO_OR_ONE },
+    { '+', TOKEN_KIND_QUANTIFIER_ONE_OR_MORE    },
+    { '*', TOKEN_KIND_QUANTIFIER_ZERO_OR_MORE   },
+    { '?', TOKEN_KIND_QUANTIFIER_ZERO_OR_ONE    },
 };
 
 const CharToTokenKind CharToSymbolTokenKindMap[SYMBOL_COUNT] = {
-    { '(', TOKEN_KIND_OPEN_PAREN },
-    { ')', TOKEN_KIND_CLOSE_PAREN },
-    { '|', TOKEN_KIND_OPERATOR_OR },
-    { '.', TOKEN_KIND_ANY_UNIT },
-    { '{', TOKEN_KIND_OPEN_CURLY },
-    { '}', TOKEN_KIND_CLOSE_CURLY },
-    { ',', TOKEN_KIND_COMMA },
-    { '^', TOKEN_KIND_CARET },
-    { '$', TOKEN_KIND_DOLLAR }
+    { '(', TOKEN_KIND_OPEN_PAREN    },
+    { ')', TOKEN_KIND_CLOSE_PAREN   },
+    { '|', TOKEN_KIND_OPERATOR_OR   },
+    { '.', TOKEN_KIND_ANY_UNIT      },
+    { '{', TOKEN_KIND_OPEN_CURLY    },
+    { '}', TOKEN_KIND_CLOSE_CURLY   },
+    { ',', TOKEN_KIND_COMMA         },
+    { '^', TOKEN_KIND_CARET         },
+    { '$', TOKEN_KIND_DOLLAR        },
+    { '[', TOKEN_KIND_OPEN_BRACKET  },
+    { ']', TOKEN_KIND_CLOSE_BRACKET },
+    { '-', TOKEN_KIND_HYPHEN        }
 };
 
 // Nodes
@@ -45,9 +51,9 @@ const char *NodeToString[NODE_KIND_COUNT] = {
 
 // Tokens-Nodes
 const TokenKindToQuantifierKind TokenKindToQuantifierKindMap[QUANTIFIER_COUNT] = {
-    { TOKEN_KIND_QUANTIFIER_ONE_OR_MORE, QUANTIFIER_ONE_OR_MORE},
-    { TOKEN_KIND_QUANTIFIER_ZERO_OR_MORE, QUANTIFIER_ZERO_OR_MORE},
-    { TOKEN_KIND_QUANTIFIER_ZERO_OR_ONE, QUANTIFIER_ZERO_OR_ONE},
+    { TOKEN_KIND_QUANTIFIER_ONE_OR_MORE,    QUANTIFIER_ONE_OR_MORE  },
+    { TOKEN_KIND_QUANTIFIER_ZERO_OR_MORE,   QUANTIFIER_ZERO_OR_MORE },
+    { TOKEN_KIND_QUANTIFIER_ZERO_OR_ONE,    QUANTIFIER_ZERO_OR_ONE  },
 };
 
 // Chars

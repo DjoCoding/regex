@@ -14,10 +14,10 @@ typedef struct {
 } StringBoolean;
 
 int main(void) {
-    char *regex = "a{1,2}b$";
+    char *regex = "^[a-d]$";
     StringBoolean tests[] = {
-        { "a",              true  },
-        { "bbbbbc",             true  },
+        { "0",              true  },
+        { "C",             true  },
     };
 
     NFA *nfa = nfa_from_regex(regex);
@@ -46,7 +46,7 @@ int main(void) {
 
 
 int main(void) {
-    char *regex = "^(a|b+c)$";
+    char *regex = "^[a-ce]$";
 
     Lexer lexer = lexer_new(regex);
     TokenList tokens = lexer_lex(&lexer);
