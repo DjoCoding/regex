@@ -63,30 +63,26 @@ NFA *compiler_compile_lit(char c) {
     return nfa_new(start, accept);
 }
 
-NFA *compiler_compile_range(Range range) {
-    State *start  = state_new();
-    State *accept = state_new();
-
-    for(char c = range.from; c <= range.to; ++c) {
-        NFA *nfa = compiler_compile_lit(c);
-        state_add_epsilon_transition(start, nfa->start);
-        state_add_epsilon_transition(nfa->accept, accept);
+void mark_char(char c, CharMarker *chars) {
+    for(size_t i = 0; i < PRINTABLE_CHAR_COUNT; ++i) {
+        if(chars[i].c == c) {
+            chars[i].marked = true;
+            break;
+        }
     }
-
-    return nfa_new(start, accept);
 }
 
-NFA *compiler_compile_class_item(ClassItem item) {
-    switch(item.kind) {
-        case CLASS_ITEM_KIND_LITERAL:   
-            return compiler_compile_lit(item.as.lit.c);
-        case CLASS_ITEM_KIND_RANGE: 
-            return compiler_compile_range(item.as.range);
-        default:
-            panic("unregistered class item kind.");
+void mark_range(Range range, CharMarker *chars) {
+    size_t i = 0;
+
+    while(i < PRINTABLE_CHAR_COUNT) {
+        if(chars[i].c == range.from) break;
+        ++i;
     }
 
-    UNREACHABLE();
+    while(i < PRINTABLE_CHAR_COUNT && chars[i].c <= range.to) {
+        chars[i++].marked = true;
+    }
 }
 
 NFA *compiler_compile_char_class(CharClass char_class) {
@@ -95,11 +91,36 @@ NFA *compiler_compile_char_class(CharClass char_class) {
 
     ClassItems class = char_class.class;
 
+    CharMarker chars[PRINTABLE_CHAR_COUNT] = {0};
+
+    for(size_t i = 0; i < LEN(PrintableCharToStringFormatMap); ++i) {
+        chars[i] = (CharMarker) {
+            .c = PrintableCharToStringFormatMap[i].c,
+            .marked = false
+        };
+    }
+
     for(size_t i = 0; i < class.count; ++i) {
         ClassItem item = class.items[i];
 
-        NFA *nfa = compiler_compile_class_item(item);
-        
+        switch(item.kind) {
+            case CLASS_ITEM_KIND_LITERAL:   
+                mark_char(item.as.lit.c, chars);
+                break;
+            case CLASS_ITEM_KIND_RANGE:
+                mark_range(item.as.range, chars);
+                break;
+            default:
+                panic("unregistered class item kind.");
+        }
+    }
+
+    for(size_t i = 0; i < PRINTABLE_CHAR_COUNT; ++i) {
+        CharMarker marker = chars[i];
+
+        if(!(marker.marked ^ char_class.negated)) continue;
+
+        NFA *nfa = compiler_compile_lit(marker.c);
         state_add_epsilon_transition(start, nfa->start);
         state_add_epsilon_transition(nfa->accept, accept);
     }

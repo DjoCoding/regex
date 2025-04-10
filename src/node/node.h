@@ -40,6 +40,7 @@ typedef struct {
 TYPE() LIST(ClassItem) ClassItems;
 
 typedef struct {
+    bool negated;
     ClassItems class;
 } CharClass;
 
@@ -88,7 +89,6 @@ typedef struct {
 
 typedef struct {
     Primary primary;
-
     Quantifier quantifier;
 } Repitition;
 
@@ -127,7 +127,7 @@ Range range_new(char from, char to);
 ClassItem class_item_from_lit(char c);
 ClassItem class_item_from_range(Range range);
 
-CharClass char_class_new(ClassItems class);
+CharClass char_class_new(ClassItems class, bool negated);
 
 Primary primary_new_char_class(CharClass char_class);
 Primary primary_new_any_lit();

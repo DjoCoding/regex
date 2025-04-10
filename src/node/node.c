@@ -32,9 +32,10 @@ ClassItem class_item_from_range(Range range) {
     };
 }
 
-CharClass char_class_new(ClassItems class) {
+CharClass char_class_new(ClassItems class, bool negated) {
     return (CharClass) {
-        .class = class
+        .class = class,
+        .negated = negated
     };
 }
 

@@ -14,7 +14,7 @@ typedef struct {
 } StringBoolean;
 
 int main(void) {
-    char *regex = "^[a-d]$";
+    char *regex = "^[0-9]$";
     StringBoolean tests[] = {
         { "0",              true  },
         { "C",             true  },

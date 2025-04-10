@@ -103,6 +103,9 @@ CharClass parser_parse_char_class(Parser *this) {
     }
 
     parser_consume(this);
+    
+    bool negated = parser_peek(this).kind == TOKEN_KIND_CARET;
+    if(negated) parser_consume(this);
 
     ClassItems class = LIST_NEW(ClassItems);
 
@@ -118,7 +121,7 @@ CharClass parser_parse_char_class(Parser *this) {
 
     parser_consume(this);
 
-    return char_class_new(class);
+    return char_class_new(class, negated);
 }
 
 Primary parser_parse_pri(Parser *this) {

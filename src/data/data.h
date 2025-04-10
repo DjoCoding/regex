@@ -42,4 +42,9 @@ typedef struct {
 
 extern const CharToStringFormat PrintableCharToStringFormatMap[PRINTABLE_CHAR_COUNT];
 
+typedef struct {
+    char c;
+    bool marked; // default for false
+} CharMarker;
+
 #endif
